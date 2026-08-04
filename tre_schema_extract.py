@@ -94,9 +94,28 @@ def open_csv(path, cfg):
             sample = f.read(65536)
             f.seek(0)
             delimiter = cfg.get("delimiter", "auto")
-            dialect = csv.Sniffer().sniff(sample, delimiters=",\t;|") if delimiter == "auto" else None
-            return f, csv.reader(f, dialect=dialect) if dialect else csv.reader(f, delimiter=delimiter), enc
-        except (UnicodeDecodeError, csv.Error) as e:
+            if delimiter == "auto":
+                try:
+                    dialect = csv.Sniffer().sniff(sample, delimiters=",\t;|")
+                    reader = csv.reader(f, dialect=dialect)
+                except csv.Error:
+                    # Sniffer commonly fails on empty/single-column data
+                    # dictionaries. Prefer a delimiter seen consistently in
+                    # the first non-empty lines; otherwise treat each line as
+                    # one field instead of skipping the file.
+                    lines = [line for line in sample.splitlines() if line.strip()][:20]
+                    candidates = [",", "\t", ";", "|"]
+                    scores = {
+                        candidate: sum(line.count(candidate) for line in lines)
+                        for candidate in candidates
+                    }
+                    fallback = max(candidates, key=lambda candidate: scores[candidate])
+                    if scores[fallback] == 0:
+                        fallback = ","
+                    reader = csv.reader(f, delimiter=fallback)
+                return f, reader, enc
+            return f, csv.reader(f, delimiter=delimiter), enc
+        except UnicodeDecodeError as e:
             last = e
             try:
                 f.close()
