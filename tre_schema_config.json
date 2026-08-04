@@ -1,0 +1,20 @@
+{
+  "input_root": "/project",
+  "privacy_mode": "schema_only",
+  "include_globs": ["**/*.csv", "**/*.xlsx"],
+  "exclude_globs": ["**/zip_backup/**", "**/~$*"],
+  "csv_encoding_candidates": ["utf-8-sig", "utf-8", "cp1252", "latin-1"],
+  "delimiter": "auto",
+  "sample_rows_per_file": 5000,
+  "max_files_per_table": 20,
+  "rare_category_min_count": 10,
+  "max_categories": 20,
+  "missing_tokens": ["", "NA", "N/A", "NULL", "null", ".", "-9", "-99", "-999"],
+  "table_rules": [
+    {
+      "name": "actiheart_timeseries",
+      "path_glob": "Internal_Data/*/Actiheart_Study_GPR_Processed_Files/*.csv"
+    }
+  ],
+  "semantic_overrides": {}
+}
