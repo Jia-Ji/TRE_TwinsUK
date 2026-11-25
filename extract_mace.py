@@ -1,9 +1,9 @@
 """Run inside the TRE with Python and pandas >= 2.0 (openpyxl for XLSX recordings).
 
-Edit the paths and set the common coverage end only after verifying coverage
-for APC, OP and mortality. Dates without times are analysed at calendar-day
-resolution. The phenotype detects first recorded events, which can reflect
-prior disease, particularly in secondary and outpatient diagnoses.
+Edit the paths for the TRE release. Source cutoffs are inclusive. Dates are
+analysed at calendar-day resolution. The phenotype detects first recorded
+events, which can reflect prior disease, particularly in secondary and
+outpatient diagnoses.
 """
 
 import re
@@ -21,8 +21,14 @@ CODE_LIST = PROJECT / "CodesFollowUp_030522.csv"
 OUTPUT = PROJECT / "DerivedData"
 LINKED_ROSTER = None  # Path to CSV containing only eligible linked participants.
 ROSTER_ID = "STUDY_ID"  # Same ID system as Study No / Person Id in this release.
-COVERAGE_END = None  # Verified common inclusive end date, as "YYYY-MM-DD".
-TIME_COLUMN = "Real_Time"  # Header shown in the raw recording screenshot.
+# APC and OP cutoffs are from the Linkage Data User Guide v1.0.
+# The mortality cutoff is the latest date of death in the mortality spreadsheet.
+SOURCE_END = {
+    "APC": pd.Timestamp("2021-03-31"),
+    "OP": pd.Timestamp("2021-03-31"),
+    "Mortality": pd.Timestamp("2023-06-10"),
+}
+TIME_COLUMN = "Real_Time" 
 EPOCH_COLUMN = "timepoint"
 
 MACE = ("mi", "hf", "va", "implant", "af")
@@ -192,20 +198,24 @@ def summarise(cohort, events, death_records):
     out = cohort.join(death)
     out["death_date_missing"] = out.index.isin(undated_deaths)
     baseline = out["baseline_date"]
-    end = pd.Timestamp(COVERAGE_END) if COVERAGE_END else pd.NaT
+    # Combined outcomes require observation from all three contributing sources.
+    mace_end = min(SOURCE_END.values())
+    mortality_end = SOURCE_END["Mortality"]
     linked = out["linked"].fillna(False)
     death_date = out["death_date"]
-    observable = (linked & baseline.lt(end) & ~out["death_date_missing"]
-                  & (death_date.isna() | death_date.gt(baseline)))
-    censor = pd.concat([death_date, pd.Series(end, index=out.index)], axis=1).min(axis=1)
+    eligible = (linked & ~out["death_date_missing"]
+                & (death_date.isna() | death_date.gt(baseline)))
+    mace_observable = eligible & baseline.lt(mace_end)
+    mortality_observable = eligible & baseline.lt(mortality_end)
+    mace_censor = death_date.where(death_date.le(mace_end), mace_end)
+    mortality_censor = death_date.where(death_date.le(mortality_end), mortality_end)
 
     timed = events.join(out[["baseline_date", "death_date", "linked"]], on="STUDY_ID")
     timed = timed[timed["linked"].fillna(True) & timed["baseline_date"].notna()]
+    timed = timed[timed["event_date"].le(timed["source"].map(SOURCE_END))]
     timed = timed[timed["death_date"].isna() | timed["event_date"].le(timed["death_date"])]
     history = timed[timed["event_date"].le(timed["baseline_date"])]
-    incident = timed[timed["event_date"].gt(timed["baseline_date"])]
-    if pd.notna(end):
-        incident = incident[incident["event_date"].le(end)]
+    incident = timed[timed["event_date"].gt(timed["baseline_date"]) & timed["event_date"].le(mace_end)]
     incident = incident.sort_values(["event_date", "source", "source_column", "code"])
 
     endpoints = {label: (cat,) for cat, label in CATEGORY_LABELS.items()}
@@ -219,24 +229,23 @@ def summarise(cohort, events, death_records):
             prior = history.loc[history["category"].isin(categories), "STUDY_ID"]
             out[f"{name}_history"] = pd.Series(out.index.isin(prior), index=out.index, dtype="boolean")
             out.loc[~linked | baseline.isna(), f"{name}_history"] = pd.NA
-            out[f"{name}_event"] = out[f"{name}_date"].notna().astype("Int64").where(observable)
-            out[f"{name}_followup_days"] = (out[f"{name}_date"].fillna(censor) - baseline).dt.days.astype("Int64").where(observable)
+            out[f"{name}_event"] = out[f"{name}_date"].notna().astype("Int64").where(mace_observable)
+            followup_days = (out[f"{name}_date"].fillna(mace_censor) - baseline).dt.days
+            out[f"{name}_followup_days"] = followup_days.astype("Int64").where(mace_observable)
 
     # Separate mortality endpoints. Only underlying CV codes count toward CVM.
     # A known non-CV death ends CVM follow-up. Unknown causes remain unknown.
-    post_baseline_death = death_date.gt(baseline) & out["linked"].fillna(True)
-    if pd.notna(end):
-        post_baseline_death &= death_date.le(end)
+    post_baseline_death = death_date.gt(baseline) & death_date.le(mortality_end) & out["linked"].fillna(True)
     cv_death = post_baseline_death & out["FU_CVM_code"].notna()
     known_cause = out.pop("cause_known").astype("boolean").fillna(False)
-    for name, event, known in (("FU_ACM", post_baseline_death, observable),
-                               ("FU_CVM", cv_death, observable & (~post_baseline_death | known_cause))):
+    for name, event, known in (("FU_ACM", post_baseline_death, mortality_observable),
+                               ("FU_CVM", cv_death, mortality_observable & (~post_baseline_death | known_cause))):
         out[name] = event.astype("Int64").where(known)
         out[f"{name}_date"] = death_date.where(event)
-        out[f"{name}_followup_days"] = (censor - baseline).dt.days.astype("Int64").where(known)
+        out[f"{name}_followup_days"] = (mortality_censor - baseline).dt.days.astype("Int64").where(known)
     out["FU_CVM_code"] = out["FU_CVM_code"].where(cv_death)
-    out["CVM_non_CV_death"] = (post_baseline_death & ~cv_death & known_cause).where(observable)
-    out["CVM_unknown_cause_death"] = (post_baseline_death & ~known_cause).where(observable)
+    out["CVM_non_CV_death"] = (post_baseline_death & ~cv_death & known_cause).where(mortality_observable)
+    out["CVM_unknown_cause_death"] = (post_baseline_death & ~known_cause).where(mortality_observable)
 
     has_mace = out["MACE_date"].notna()
     assert out.loc[has_mace, "MACE_stroke_date"].le(out.loc[has_mace, "MACE_date"]).all()
@@ -256,6 +265,8 @@ def main():
     events = (pd.concat(event_parts, ignore_index=True) if event_parts else
               pd.DataFrame(columns=EVENT_COLUMNS).astype({"event_date": "datetime64[ns]"}))
     events = events.drop_duplicates().sort_values(["STUDY_ID", "event_date", "category"])
+    # Keep matches outside coverage in the audit, with an explicit flag.
+    events["within_source_coverage"] = events["event_date"].le(events["source"].map(SOURCE_END))
     outcomes = summarise(cohort, events, deaths)
 
     OUTPUT.mkdir(parents=True, exist_ok=True)
@@ -272,8 +283,8 @@ def main():
     for label, column in (("MACE", "MACE_event"), ("MACE_stroke", "MACE_stroke_event"),
                           ("all-cause mortality", "FU_ACM"), ("cardiovascular mortality", "FU_CVM")):
         print(f"{label}: {outcomes[column].sum()} events among {outcomes[column].count()} with final follow-up")
-    if LINKED_ROSTER is None or COVERAGE_END is None:
-        print("Provisional output: set the verified linkage roster and coverage end for final survival indicators.")
+    if LINKED_ROSTER is None:
+        print("Provisional output: set the verified linkage roster for final survival indicators.")
 
 
 if __name__ == "__main__":
