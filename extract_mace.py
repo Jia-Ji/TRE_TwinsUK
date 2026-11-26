@@ -23,10 +23,12 @@ ACTIHEART_SUMMARY = ACTIHEART_RELEASE / "DS00016_Actiheart/Actiheart_Data.xlsx"
 APC = PROJECT / "Full_Data/Admitted_Patient_Care_Data_(HES_APC).csv"
 OP = PROJECT / "Full_Data/Outpatient_Care_Data_(HES_OP).csv"
 MORTALITY = PROJECT / "Full_Data/Mortality_Data.csv"
-CODE_LIST = PROJECT / "TRE_TwinsUK/CodesFollowUp_030522.csv"
+CODE_LIST = PROJECT / "Full_data/CodesFollowUp_030522.csv"
 OUTPUT = PROJECT / "DerivedData"
 LINKED_ROSTER = None  # Path to CSV containing only eligible linked participants.
 ROSTER_ID = "STUDY_ID"  # Same ID system as Study No / Person Id in this release.
+# Provisional analysis assumption. A verified roster takes precedence if supplied.
+ASSUME_ALL_ACTIHEART_LINKED = True
 # APC and OP cutoffs are from the Linkage Data User Guide v1.0.
 # The mortality cutoff is the latest date of death in the mortality spreadsheet.
 SOURCE_END = {
@@ -37,9 +39,15 @@ SOURCE_END = {
 TIME_COLUMN = "Real_Time" 
 EPOCH_COLUMN = "timepoint"
 
-MACE = ("mi", "hf", "va", "implant", "af")
+MACE = ("mi", "hf", "va", "implant")
 MACE_STROKE = (*MACE, "stroke")
-CATEGORY_LABELS = dict(zip(MACE_STROKE, ("MI", "HF", "VA", "implant", "AF", "stroke")))
+CATEGORY_LABELS = {"mi": "MI", "hf": "HF", "va": "VA", "implant": "implant", "af": "AF", "stroke": "stroke"}
+COMPOSITES = {
+    "MACE": MACE,
+    "MACE_stroke": MACE_STROKE,
+    "MACE_no_op": MACE,
+    "MACE_stroke_no_op": MACE_STROKE,
+}
 UNDERLYING = {"S_UNDERLYING_COD_ICD10": "ICD10", "S_UNDERLYING_COD_ICD9": "ICD9"}
 EVENT_COLUMNS = ["STUDY_ID", "event_date", "category", "code", "code_type", "source", "source_column"]
 
@@ -106,9 +114,12 @@ def actiheart_baselines():
     cohort = cohort.drop_duplicates("STUDY_ID").set_index("STUDY_ID")
     cohort["baseline_date"] = cohort["baseline_date"].dt.normalize()
     cohort["linked"] = pd.Series(pd.NA, index=cohort.index, dtype="boolean")
+    cohort["linkage_assumed"] = LINKED_ROSTER is None and ASSUME_ALL_ACTIHEART_LINKED
     if LINKED_ROSTER is not None:
         roster = pd.read_csv(LINKED_ROSTER, dtype="string", usecols=[ROSTER_ID])
         cohort["linked"] = cohort.index.isin(ids(roster[ROSTER_ID]).dropna())
+    elif ASSUME_ALL_ACTIHEART_LINKED:
+        cohort["linked"] = True
     return cohort.sort_index()
 
 
@@ -117,7 +128,7 @@ def code_lookup():
     codes["code"] = normalise_codes(codes["code"])
     codes["cat"] = codes["cat"].str.strip().str.lower()
     codes["type"] = codes["type"].str.strip().str.upper()
-    codes = codes[codes["cat"].isin((*MACE_STROKE, "cv"))
+    codes = codes[codes["cat"].isin((*CATEGORY_LABELS, "cv"))
                   & codes["type"].isin(["ICD9", "ICD10", "OPCS4"])].drop_duplicates()
     lookup = {kind: {} for kind in ("ICD9", "ICD10", "OPCS4")}
     for (kind, category), rows in codes.groupby(["type", "cat"]):
@@ -197,7 +208,7 @@ def extract(path, source, cohort, lookup):
                 operation_date = event_dates.get(column.replace("OPERTN_", "OPDATE_", 1))
                 if operation_date is not None:
                     date = operation_date.fillna(default_date)
-            for category in MACE_STROKE:
+            for category in CATEGORY_LABELS:
                 listed = lookup[kind].get(category)
                 if not listed:
                     continue
@@ -255,14 +266,20 @@ def summarise(cohort, events, death_records):
     incident = incident.sort_values(["event_date", "source", "source_column", "code"])
 
     endpoints = {label: (cat,) for cat, label in CATEGORY_LABELS.items()}
-    endpoints.update({"MACE": MACE, "MACE_stroke": MACE_STROKE})
+    endpoints.update(COMPOSITES)
     for name, categories in endpoints.items():
-        first = incident[incident["category"].isin(categories)].drop_duplicates("STUDY_ID").set_index("STUDY_ID")
+        incident_match = incident["category"].isin(categories)
+        history_match = history["category"].isin(categories)
+        if name.endswith("_no_op"):
+            # Apply the code-system filter before choosing a first event or flagging history.
+            incident_match &= incident["code_type"].ne("OPCS4")
+            history_match &= history["code_type"].ne("OPCS4")
+        first = incident[incident_match].drop_duplicates("STUDY_ID").set_index("STUDY_ID")
         out[f"{name}_date"] = first["event_date"]
         out[f"{name}_code"] = first["code"]
         out[f"{name}_source"] = first["source"]
-        if name in ("MACE", "MACE_stroke"):
-            prior = history.loc[history["category"].isin(categories), "STUDY_ID"]
+        if name in COMPOSITES:
+            prior = history.loc[history_match, "STUDY_ID"]
             out[f"{name}_history"] = pd.Series(out.index.isin(prior), index=out.index, dtype="boolean")
             out.loc[~linked | baseline.isna(), f"{name}_history"] = pd.NA
             out[f"{name}_event"] = out[f"{name}_date"].notna().astype("Int64").where(mace_observable)
@@ -283,8 +300,10 @@ def summarise(cohort, events, death_records):
     out["CVM_non_CV_death"] = (post_baseline_death & ~cv_death & known_cause).where(mortality_observable)
     out["CVM_unknown_cause_death"] = (post_baseline_death & ~known_cause).where(mortality_observable)
 
-    has_mace = out["MACE_date"].notna()
-    assert out.loc[has_mace, "MACE_stroke_date"].le(out.loc[has_mace, "MACE_date"]).all()
+    for broader, narrower in (("MACE_stroke", "MACE"), ("MACE_stroke_no_op", "MACE_no_op"),
+                              ("MACE", "MACE_no_op"), ("MACE_stroke", "MACE_stroke_no_op")):
+        has_event = out[f"{narrower}_date"].notna()
+        assert out.loc[has_event, f"{broader}_date"].le(out.loc[has_event, f"{narrower}_date"]).all()
     assert out.index.is_unique
     assert out.filter(like="_followup_days").ge(0).fillna(True).all().all()
     return out
@@ -296,9 +315,11 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     log.info("Starting TwinsUK outcome extraction")
+    if LINKED_ROSTER is None and ASSUME_ALL_ACTIHEART_LINKED:
+        log.warning("Assuming all raw Actiheart participants are eligible for HES and mortality linkage.")
     cohort = actiheart_baselines()
-    linked_count = int(cohort["linked"].sum()) if LINKED_ROSTER is not None else "unknown"
-    log.info("Actiheart cohort: %d participants, %s linked, %d missing baseline",
+    linked_count = int(cohort["linked"].sum()) if cohort["linked"].notna().any() else "unknown"
+    log.info("Actiheart cohort: %d participants, %s eligible for linkage, %d missing baseline",
              len(cohort), linked_count, cohort["baseline_date"].isna().sum())
     log.info("Reading outcome codes from %s", CODE_LIST)
     lookup = code_lookup()
@@ -326,14 +347,15 @@ def main():
         matches=("code", "size"), participants=("STUDY_ID", "nunique"),
     )
     log.info("Audit matches by source and category:\n%s", counts)
-    for name in ("MACE", "MACE_stroke"):
+    for name in COMPOSITES:
         log.info("%s: %d with confirmed history, %d with a post-baseline date",
                  name, outcomes[f"{name}_history"].sum(), outcomes[f"{name}_date"].count())
-    for label, column in (("MACE", "MACE_event"), ("MACE_stroke", "MACE_stroke_event"),
-                          ("all-cause mortality", "FU_ACM"), ("cardiovascular mortality", "FU_CVM")):
+    event_columns = {name: f"{name}_event" for name in COMPOSITES}
+    event_columns.update({"all-cause mortality": "FU_ACM", "cardiovascular mortality": "FU_CVM"})
+    for label, column in event_columns.items():
         log.info("%s: %d events among %d participants with final follow-up",
                  label, outcomes[column].sum(), outcomes[column].count())
-    if LINKED_ROSTER is None:
+    if LINKED_ROSTER is None and not ASSUME_ALL_ACTIHEART_LINKED:
         log.warning("Provisional output: set the verified linkage roster for final survival indicators.")
     log.info("Extraction complete: wrote %d audit rows and %d participant rows", len(events), len(outcomes))
 
