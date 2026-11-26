@@ -6,18 +6,24 @@ events, which can reflect prior disease, particularly in secondary and
 outpatient diagnoses.
 """
 
+import logging
 import re
 from pathlib import Path
 
 import pandas as pd
 
 
-PROJECT = Path(r"\\192.168.0.10\storage\project")
-ACTIHEART = PROJECT / "Internal_Data/I1334_29.08.2025/Actiheart_Study_GPR_Processed_Files"
+log = logging.getLogger(__name__)
+
+# Linux mount inside the TRE. Absolute paths also work from actiheart/scripts.
+PROJECT = Path("/project/")
+ACTIHEART_RELEASE = PROJECT / "Internal_Data/I1334_29.08.2025"
+ACTIHEART = ACTIHEART_RELEASE / "Actiheart_Study_GPR_Processed_Files"
+ACTIHEART_SUMMARY = ACTIHEART_RELEASE / "DS00016_Actiheart/Actiheart_Data.csv"
 APC = PROJECT / "Full_Data/Admitted_Patient_Care_Data_(HES_APC).csv"
 OP = PROJECT / "Full_Data/Outpatient_Care_Data_(HES_OP).csv"
 MORTALITY = PROJECT / "Full_Data/Mortality_Data.csv"
-CODE_LIST = PROJECT / "CodesFollowUp_030522.csv"
+CODE_LIST = PROJECT / "TRE_TwinsUK/CodesFollowUp_030522.csv"
 OUTPUT = PROJECT / "DerivedData"
 LINKED_ROSTER = None  # Path to CSV containing only eligible linked participants.
 ROSTER_ID = "STUDY_ID"  # Same ID system as Study No / Person Id in this release.
@@ -43,6 +49,23 @@ def ids(values):
     return values.str.strip().str.replace(r"^0+(?=\d+$)", "", regex=True)
 
 
+def compare_actiheart_ids(filename_ids):
+    log.info("Comparing raw filename IDs with %s", ACTIHEART_SUMMARY)
+    summary = pd.read_csv(ACTIHEART_SUMMARY, dtype="string", usecols=["id"])
+    summary_ids = ids(summary["id"]).replace("", pd.NA).dropna()
+    summary_set = set(summary_ids)
+    filename_set = set(ids(pd.Series(filename_ids, dtype="string")))
+    log.info("Actiheart ID check: %d summary rows with IDs (%d distinct); "
+             "%d raw filenames (%d distinct IDs)",
+             len(summary_ids), len(summary_set), len(filename_ids), len(filename_set))
+    for label, difference in (("Actiheart_Data.csv only", summary_set - filename_set),
+                              ("Raw filenames only", filename_set - summary_set)):
+        if difference:
+            log.warning("%s (%d IDs): %s", label, len(difference), ", ".join(sorted(difference)))
+    if summary_set == filename_set:
+        log.info("Summary and raw filename ID sets match")
+
+
 def dates(values):
     # UK day/month/year text and ISO timestamps (including Excel datetime cells).
     text = values.astype("string").str.strip()
@@ -52,13 +75,17 @@ def dates(values):
 
 
 def actiheart_baselines():
+    log.info("Looking for Actiheart recordings in %s", ACTIHEART)
+    paths = [path for path in sorted(ACTIHEART.iterdir())
+             if re.search(r"_GPRProcessedFL(?:Data|Dtata)$", path.stem, re.I)]
+    log.info("Found %d Actiheart recordings", len(paths))
+    filename_ids = [path.stem.split("_", 1)[0] for path in paths]
+    for path, participant_id in zip(paths, filename_ids):
+        if not re.fullmatch(r"[0-9]+", participant_id):
+            raise ValueError(f"Expected a numeric Actiheart ID before the first underscore in {path.name}")
+    compare_actiheart_ids(filename_ids)
     recordings = []
-    for path in sorted(ACTIHEART.iterdir()):
-        if not re.search(r"_GPRProcessedFL(?:Data|Dtata)$", path.stem, re.I):
-            continue
-        match = re.search(r"#(\d+)[^#]*#", path.stem)
-        if not match:
-            raise ValueError(f"Cannot find the Actiheart ID in {path.name}")
+    for number, (path, participant_id) in enumerate(zip(paths, filename_ids), start=1):
         readers = {".csv": pd.read_csv, ".xlsx": pd.read_excel}
         if path.suffix.lower() not in readers:
             raise ValueError(f"Check the recording file extension for {path.name}")
@@ -67,7 +94,9 @@ def actiheart_baselines():
         # timepoints in the example are before recording start. No wear threshold
         # was supplied, so any recording with a usable timestamp is eligible.
         epochs = dates(raw[TIME_COLUMN][pd.to_numeric(raw[EPOCH_COLUMN], errors="coerce").ge(0)]).dropna()
-        recordings.append((match[1], epochs.min(), epochs.nunique()))
+        recordings.append((participant_id, epochs.min(), epochs.nunique()))
+        if number % 50 == 0 or number == len(paths):
+            log.info("Actiheart: processed %d/%d recordings", number, len(paths))
     if not recordings:
         raise ValueError(f"No processed Actiheart recordings found in {ACTIHEART}")
     cohort = pd.DataFrame(recordings, columns=["STUDY_ID", "baseline_date", "usable_epochs"])
@@ -110,6 +139,7 @@ def matches(values, kind, categories):
 
 
 def extract(path, source, cohort, lookup):
+    log.info("%s: opening %s", source, path)
     headers = pd.read_csv(path, nrows=0).columns.tolist()
     if source == "Mortality":
         fields = {column: UNDERLYING[column] for column in UNDERLYING if column in headers}
@@ -133,10 +163,15 @@ def extract(path, source, cohort, lookup):
 
     events, deaths = [], []
     missing_dates = 0
+    rows_read = cohort_rows = 0
     needed = {"STUDY_ID", *fields, *date_fields}
     for data in pd.read_csv(path, usecols=lambda column: column in needed, dtype="string", chunksize=50000):
+        rows_read += len(data)
         data["STUDY_ID"] = ids(data["STUDY_ID"])
         data = data[data["STUDY_ID"].isin(cohort.index)]
+        cohort_rows += len(data)
+        log.info("%s: read %s rows (%s from the Actiheart cohort)",
+                 source, f"{rows_read:,}", f"{cohort_rows:,}")
         if data.empty:
             continue
         event_dates = {column: dates(data[column]).dt.normalize() for column in date_fields if column in data}
@@ -175,7 +210,8 @@ def extract(path, source, cohort, lookup):
                         "category": category, "code": code[keep], "code_type": kind,
                         "source": source, "source_column": column,
                     }))
-    print(f"{source}: {missing_dates} qualifying code-position matches missing a usable date")
+    log.info("%s: finished matching %s cohort rows; %s code-position matches lacked a usable date",
+             source, f"{cohort_rows:,}", f"{missing_dates:,}")
     return events, deaths
 
 
@@ -255,7 +291,16 @@ def summarise(cohort, events, death_records):
 
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+    log.info("Starting TwinsUK outcome extraction")
     cohort = actiheart_baselines()
+    linked_count = int(cohort["linked"].sum()) if LINKED_ROSTER is not None else "unknown"
+    log.info("Actiheart cohort: %d participants, %s linked, %d missing baseline",
+             len(cohort), linked_count, cohort["baseline_date"].isna().sum())
+    log.info("Reading outcome codes from %s", CODE_LIST)
     lookup = code_lookup()
     event_parts, deaths = [], []
     for path, source in ((APC, "APC"), (OP, "OP"), (MORTALITY, "Mortality")):
@@ -267,24 +312,30 @@ def main():
     events = events.drop_duplicates().sort_values(["STUDY_ID", "event_date", "category"])
     # Keep matches outside coverage in the audit, with an explicit flag.
     events["within_source_coverage"] = events["event_date"].le(events["source"].map(SOURCE_END))
+    log.info("Summarising %d distinct matches for %d Actiheart participants", len(events), len(cohort))
     outcomes = summarise(cohort, events, deaths)
 
+    log.info("Writing mace_events.csv and mace_outcomes.csv to %s", OUTPUT)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     events.to_csv(OUTPUT / "mace_events.csv", index=False)
     outcomes.to_csv(OUTPUT / "mace_outcomes.csv")
 
-    linked_count = int(cohort["linked"].sum()) if LINKED_ROSTER is not None else "unknown"
-    print(f"Actiheart participants: {len(cohort)} | linked: {linked_count} | missing baseline: {cohort['baseline_date'].isna().sum()}")
-    print(f"Participants with a mortality record and no usable death date: {outcomes['death_date_missing'].sum()}")
-    print(events.groupby(["source", "category"]).agg(matches=("code", "size"), participants=("STUDY_ID", "nunique")))
+    log.info("Participants with a mortality record and no usable death date: %d",
+             outcomes["death_date_missing"].sum())
+    counts = events.groupby(["source", "category"]).agg(
+        matches=("code", "size"), participants=("STUDY_ID", "nunique"),
+    )
+    log.info("Audit matches by source and category:\n%s", counts)
     for name in ("MACE", "MACE_stroke"):
-        print(f"{name}: {outcomes[f'{name}_history'].sum()} with confirmed history, "
-              f"{outcomes[f'{name}_date'].count()} with a post-baseline date")
+        log.info("%s: %d with confirmed history, %d with a post-baseline date",
+                 name, outcomes[f"{name}_history"].sum(), outcomes[f"{name}_date"].count())
     for label, column in (("MACE", "MACE_event"), ("MACE_stroke", "MACE_stroke_event"),
                           ("all-cause mortality", "FU_ACM"), ("cardiovascular mortality", "FU_CVM")):
-        print(f"{label}: {outcomes[column].sum()} events among {outcomes[column].count()} with final follow-up")
+        log.info("%s: %d events among %d participants with final follow-up",
+                 label, outcomes[column].sum(), outcomes[column].count())
     if LINKED_ROSTER is None:
-        print("Provisional output: set the verified linkage roster for final survival indicators.")
+        log.warning("Provisional output: set the verified linkage roster for final survival indicators.")
+    log.info("Extraction complete: wrote %d audit rows and %d participant rows", len(events), len(outcomes))
 
 
 if __name__ == "__main__":
