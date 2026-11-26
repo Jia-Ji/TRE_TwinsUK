@@ -1,4 +1,4 @@
-"""Run inside the TRE with Python and pandas >= 2.0 (openpyxl for XLSX recordings).
+"""Run inside the TRE with Python, pandas >= 2.0 and openpyxl.
 
 Edit the paths for the TRE release. Source cutoffs are inclusive. Dates are
 analysed at calendar-day resolution. The phenotype detects first recorded
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 PROJECT = Path("/project/")
 ACTIHEART_RELEASE = PROJECT / "Internal_Data/I1334_29.08.2025"
 ACTIHEART = ACTIHEART_RELEASE / "Actiheart_Study_GPR_Processed_Files"
-ACTIHEART_SUMMARY = ACTIHEART_RELEASE / "DS00016_Actiheart/Actiheart_Data.csv"
+ACTIHEART_SUMMARY = ACTIHEART_RELEASE / "DS00016_Actiheart/Actiheart_Data.xlsx"
 APC = PROJECT / "Full_Data/Admitted_Patient_Care_Data_(HES_APC).csv"
 OP = PROJECT / "Full_Data/Outpatient_Care_Data_(HES_OP).csv"
 MORTALITY = PROJECT / "Full_Data/Mortality_Data.csv"
@@ -51,14 +51,14 @@ def ids(values):
 
 def compare_actiheart_ids(filename_ids):
     log.info("Comparing raw filename IDs with %s", ACTIHEART_SUMMARY)
-    summary = pd.read_csv(ACTIHEART_SUMMARY, dtype="string", usecols=["id"])
+    summary = pd.read_excel(ACTIHEART_SUMMARY, dtype="string", usecols=["id"])
     summary_ids = ids(summary["id"]).replace("", pd.NA).dropna()
     summary_set = set(summary_ids)
     filename_set = set(ids(pd.Series(filename_ids, dtype="string")))
     log.info("Actiheart ID check: %d summary rows with IDs (%d distinct); "
              "%d raw filenames (%d distinct IDs)",
              len(summary_ids), len(summary_set), len(filename_ids), len(filename_set))
-    for label, difference in (("Actiheart_Data.csv only", summary_set - filename_set),
+    for label, difference in ((f"{ACTIHEART_SUMMARY.name} only", summary_set - filename_set),
                               ("Raw filenames only", filename_set - summary_set)):
         if difference:
             log.warning("%s (%d IDs): %s", label, len(difference), ", ".join(sorted(difference)))
