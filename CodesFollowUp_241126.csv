@@ -1,0 +1,336 @@
+code,cat,type,disease_name
+4109,MI,ICD9,Acute myocardial infarction
+4280,HF,ICD9,Congestive heart failure
+4281,HF,ICD9,Left heart failure
+4289,HF,ICD9,"Heart failure, unspecified"
+I21,MI,ICD10,Acute myocardial infarction
+I210,MI,ICD10,Acute transmural myocardial infarction of anterior wall
+I211,MI,ICD10,Acute transmural myocardial infarction of inferior wall
+I212,MI,ICD10,Acute transmural myocardial infarction of other sites
+I213,MI,ICD10,Acute transmural myocardial infarction of unspecified site
+I214,MI,ICD10,Acute subendocardial myocardial infarction
+I219,MI,ICD10,"Acute myocardial infarction, unspecified"
+I22,MI,ICD10,Subsequent myocardial infarction
+I220,MI,ICD10,Subsequent myocardial infarction of anterior wall
+I221,MI,ICD10,Subsequent myocardial infarction of inferior wall
+I228,MI,ICD10,Subsequent myocardial infarction of other sites
+I229,MI,ICD10,Subsequent myocardial infarction of unspecified site
+I23,MI,ICD10,Certain current complications following acute myocardial infarction
+I230,MI,ICD10,Haemopericardium as current complication following acute myocardial infarction
+I231,MI,ICD10,Atrial septal defect as current complication following acute myocardial infarction
+I232,MI,ICD10,Ventricular septal defect as current complication following acute myocardial infarction
+I233,MI,ICD10,Rupture of cardiac wall without haemopericardium as current complication following acute myocardial infarction
+I234,MI,ICD10,Rupture of chordae tendineae as current complication following acute myocardial infarction
+I235,MI,ICD10,Rupture of papillary muscle as current complication following acute myocardial infarction
+I236,MI,ICD10,"Thrombosis of atrium, auricular appendage and ventricle as current complications following acute myocardial infarction"
+I238,MI,ICD10,Other current complications following acute myocardial infarction
+I130,HF,ICD10,Hypertensive heart and renal disease with (congestive) heart failure
+I132,HF,ICD10,Hypertensive heart and renal disease with both (congestive) heart failure and renal failure
+I50,HF,ICD10,Heart failure
+I500,HF,ICD10,Congestive heart failure
+I501,HF,ICD10,Left ventricular failure
+I509,HF,ICD10,"Heart failure, unspecified"
+I472,VA,ICD10,Ventricular tachycardia
+I490,VA,ICD10,Ventricular fibrillation and flutter
+I460,VA,ICD10,Cardiac arrest with successful resuscitation
+I461,VA,ICD10,"Sudden cardiac death, so described"
+I469,VA,ICD10,"Cardiac arrest, unspecified"
+I470,VA,ICD10,Reentry ventricular arrhythmia
+I48,AF,ICD10,Atrial fibrillation and flutter
+I480,AF,ICD10,Paroxysmal atrial fibrillation
+I481,AF,ICD10,Persistent atrial fibrillation
+I482,AF,ICD10,Chronic atrial fibrillation
+I483,AF,ICD10,Typical atrial flutter
+I484,AF,ICD10,Atypical atrial flutter
+I489,AF,ICD10,"Atrial fibrillation and atrial flutter,  unspecified"
+K621,AF,OPCS4,Percutaneous transluminal ablation of pulmonary vein to left atrium conducting system
+K622,AF,OPCS4,Percutaneous transluminal ablation of atrial wall for atrial flutter
+K623,AF,OPCS4,Percutaneous transluminal ablation of conducting system of heart for atrial flutter NEC
+K624,AF,OPCS4,Percutaneous transluminal internal cardioversion NEC
+K40,MI,OPCS4,Saphenous vein graft replacement of coronary artery
+K401,MI,OPCS4,Saphenous vein graft replacement of one coronary artery
+K402,MI,OPCS4,Saphenous vein graft replacement of two coronary arteries
+K403,MI,OPCS4,Saphenous vein graft replacement of three coronary arteries
+K404,MI,OPCS4,Saphenous vein graft replacement of four or more coronary arteries
+K409,MI,OPCS4,Unspecified saphenous vein graft replacement of coronary artery
+K41,MI,OPCS4,Other autograft replacement of coronary artery
+K411,MI,OPCS4,Autograft replacement of one coronary artery NEC
+K412,MI,OPCS4,Autograft replacement of two coronary arteries NEC
+K413,MI,OPCS4,Autograft replacement of three coronary arteries NEC
+K414,MI,OPCS4,Autograft replacement of four or more coronary arteries NEC
+K42,MI,OPCS4,Allograft replacement of coronary artery
+K424,MI,OPCS4,Allograft replacement of four or more coronary arteries
+K44,MI,OPCS4,Other replacement of coronary artery
+K441,MI,OPCS4,Replacement of coronary arteries using multiple methods
+K442,MI,OPCS4,Revision of replacement of coronary artery
+K449,MI,OPCS4,Unspecified other replacement of coronary artery
+K45,MI,OPCS4,Connection of thoracic artery to coronary artery
+K451,MI,OPCS4,Double anastomosis of mammary arteries to coronary arteries
+K452,MI,OPCS4,Double anastomosis of thoracic arteries to coronary arteries NEC
+K453,MI,OPCS4,Anastomosis of mammary artery to left anterior descending coronary artery
+K454,MI,OPCS4,Anastomosis of mammary artery to coronary artery NEC
+K455,MI,OPCS4,Anastomosis of thoracic artery to coronary artery NEC
+K456,MI,OPCS4,Revision of connection of thoracic artery to coronary artery
+K458,MI,OPCS4,Other specified connection of thoracic artery to coronary artery
+K459,MI,OPCS4,Unspecified connection of thoracic artery to coronary artery
+K49,MI,OPCS4,Transluminal balloon angioplasty of coronary artery
+K491,MI,OPCS4,Percutaneous transluminal balloon angioplasty of one coronary artery
+K492,MI,OPCS4,Percutaneous transluminal balloon angioplasty of multiple coronary arteries
+K493,MI,OPCS4,Percutaneous transluminal balloon angioplasty of bypass graft of coronary artery
+K494,MI,OPCS4,Percutaneous transluminal cutting balloon angioplasty of coronary artery
+K498,MI,OPCS4,Other specified transluminal balloon angioplasty of coronary artery
+K499,MI,OPCS4,Unspecified transluminal balloon angioplasty of coronary artery
+K50,MI,OPCS4,Other therapeutic transluminal operations on coronary artery
+K501,MI,OPCS4,Percutaneous transluminal laser coronary angioplasty
+K502,MI,OPCS4,Percutaneous transluminal coronary thrombolysis using streptokinase
+K503,MI,OPCS4,Percutaneous transluminal injection of therapeutic substance into coronary artery NEC
+K504,MI,OPCS4,Percutaneous transluminal atherectomy of coronary artery
+K508,MI,OPCS4,Other specified other therapeutic transluminal operations on coronary artery
+K509,MI,OPCS4,Unspecified other therapeutic transluminal operations on coronary artery
+K75,MI,OPCS4,Percutaneous transluminal balloon angioplasty and insertion of stent into coronary artery
+K751,MI,OPCS4,Percutaneous transluminal balloon angioplasty and insertion of 1-2 drug-eluting stents into coronary artery
+K752,MI,OPCS4,Percutaneous transluminal balloon angioplasty and insertion of 3 or more drug-eluting stents into coronary artery
+K753,MI,OPCS4,Percutaneous transluminal balloon angioplasty and insertion of 1-2 stents into coronary artery
+K754,MI,OPCS4,Percutaneous transluminal balloon angioplasty and insertion of 3 or more stents into coronary artery NEC
+K758,MI,OPCS4,Other specified percutaneous transluminal balloon angioplasty and insertion of stent into coronary artery
+K759,MI,OPCS4,Unspecified percutaneous transluminal balloon angioplasty and insertion of stent into coronary artery
+K596,implant,OPCS4,Implantation of cardioverter defibrillator using three electrode leads
+K617,implant,OPCS4,Implantation of biventricular cardiac pacemaker system
+K607,implant,OPCS4,Implantation of intravenous biventricular cardiac pacemaker system
+K576,VA,OPCS4,Percutaneous transluminal ablation of ventricular wall
+K641,VA,OPCS4,Percutaneous radiofrequency ablation of epicardium
+X503,VA,OPCS4,Advanced cardiac pulmonary resuscitation
+X504,VA,OPCS4,External ventricular defibrillation
+K59,implant,OPCS4,Cardioverter defibrillator introduced through the vein
+K591,implant,OPCS4,Implantation of cardioverter defibrillator using one electrode lead
+K592,implant,OPCS4,Implantation of cardioverter defibrillator using two electrode leads
+K593,implant,OPCS4,Resiting of lead of cardioverter defibrillator
+K594,implant,OPCS4,Renewal of cardioverter defibrillator
+K598,implant,OPCS4,Other specified cardioverter defibrillator introduced through the vein
+K599,implant,OPCS4,Unspecified cardioverter defibrillator introduced through the vein
+K72,implant,OPCS4,Other cardioverter defibrillator
+K721,implant,OPCS4,Implantation of subcutaneous cardioverter defibrillator
+K723,implant,OPCS4,Renewal of subcutaneous cardioverter defibrillator
+I20,CV,ICD10,Angina pectoris
+B332,CV,ICD10,Viral carditis
+G45,TIA,ICD10,Transient cerebral ischaemic attacks and related syndromes
+G450,TIA,ICD10,Vertebro-basilar artery syndrome
+G453,TIA,ICD10,Amaurosis fugax
+G458,TIA,ICD10,Other transient cerebral ischaemic attacks and related syndromes
+G459,TIA,ICD10,"Transient cerebral ischaemic attack, unspecified"
+I11,CV,ICD10,Hypertensive heart disease
+I110,HF,ICD10,Hypertensive heart disease with (congestive) heart failure
+I119,CV,ICD10,Hypertensive heart disease without (congestive) heart failure
+I24,CV,ICD10,Other acute ischaemic heart diseases
+I240,CV,ICD10,Coronary thrombosis not resulting in myocardial infarction
+I248,CV,ICD10,Other forms of acute ischaemic heart disease
+I249,CV,ICD10,"Acute ischaemic heart disease, unspecified"
+I25,CV,ICD10,Chronic ischaemic heart disease
+I250,CV,ICD10,"Atherosclerotic cardiovascular disease, so described"
+I251,CV,ICD10,Atherosclerotic heart disease
+I252,CV,ICD10,Old myocardial infarction
+I253,CV,ICD10,Aneurysm of heart
+I254,CV,ICD10,Coronary artery aneurysm
+I255,CV,ICD10,Ischaemic cardiomyopathy
+I256,CV,ICD10,Silent myocardial ischaemia
+I258,CV,ICD10,Other forms of chronic ischaemic heart disease
+I259,CV,ICD10,"Chronic ischaemic heart disease, unspecified"
+I34,CV,ICD10,Nonrheumatic mitral valve disorders
+I340,CV,ICD10,Mitral (valve) insufficiency
+I341,CV,ICD10,Mitral (valve) prolapse
+I342,CV,ICD10,Nonrheumatic mitral (valve) stenosis
+I348,CV,ICD10,Other nonrheumatic mitral valve disorders
+I349,CV,ICD10,"Nonrheumatic mitral valve disorder, unspecified"
+I35,CV,ICD10,Nonrheumatic aortic valve disorders
+I350,CV,ICD10,Aortic (valve) stenosis
+I351,CV,ICD10,Aortic (valve) insufficiency
+I352,CV,ICD10,Aortic (valve) stenosis with insufficiency
+I358,CV,ICD10,Other aortic valve disorders
+I359,CV,ICD10,"Aortic valve disorder, unspecified"
+I36,CV,ICD10,Nonrheumatic tricuspid valve disorders
+I360,CV,ICD10,Nonrheumatic tricuspid (valve) stenosis
+I361,CV,ICD10,Nonrheumatic tricuspid (valve) insufficiency
+I368,CV,ICD10,Other nonrheumatic tricuspid valve disorders
+I369,CV,ICD10,"Nonrheumatic tricuspid valve disorder, unspecified"
+I37,CV,ICD10,Pulmonary valve disorders
+I370,CV,ICD10,Pulmonary valve stenosis
+I371,CV,ICD10,Pulmonary valve insufficiency
+I372,CV,ICD10,Pulmonary valve stenosis with insufficiency
+I378,CV,ICD10,Other pulmonary valve disorders
+I379,CV,ICD10,"Pulmonary valve disorder, unspecified"
+I400,CV,ICD10,Infective myocarditis
+I401,CV,ICD10,Isolated myocarditis
+I408,CV,ICD10,Other acute myocarditis
+I409,CV,ICD10,"Acute myocarditis, unspecified"
+I411,CV,ICD10,Myocarditis in viral diseases classified elsewhere
+I412,CV,ICD10,Myocarditis in other infectious and parasitic diseases classified elsewhere
+I418,CV,ICD10,Myocarditis in other diseases classified elsewhere
+I42,CV,ICD10,Cardiomyopathy
+I420,CV,ICD10,Dilated cardiomyopathy
+I421,CV,ICD10,Obstructive hypertrophic cardiomyopathy
+I422,CV,ICD10,Other hypertrophic cardiomyopathy
+I423,CV,ICD10,Endomyocardial (eosinophilic) disease
+I424,CV,ICD10,Endocardial fibroelastosis
+I425,CV,ICD10,Other restrictive cardiomyopathy
+I426,CV,ICD10,Alcoholic cardiomyopathy
+I427,CV,ICD10,Cardiomyopathy due to drugs and other external agents
+I428,CV,ICD10,Other cardiomyopathies
+I429,CV,ICD10,"Cardiomyopathy, unspecified"
+I43,CV,ICD10,Cardiomyopathy in diseases classified elsewhere
+I430,CV,ICD10,Cardiomyopathy in infectious and parasitic diseases classified elsewhere
+I431,CV,ICD10,Cardiomyopathy in metabolic diseases
+I432,CV,ICD10,Cardiomyopathy in nutritional diseases
+I438,CV,ICD10,Cardiomyopathy in other diseases classified elsewhere
+I441,CV,ICD10,"Atrioventricular block, second degree"
+I442,CV,ICD10,"Atrioventricular block, complete"
+I499,CV,ICD10,"Cardiac arrhythmia, unspecified"
+I514,CV,ICD10,"Myocarditis, unspecified"
+I61,STROKE,ICD10,Intracerebral haemorrhage
+I610,STROKE,ICD10,"Intracerebral haemorrhage in hemisphere, subcortical"
+I611,STROKE,ICD10,"Intracerebral haemorrhage in hemisphere, cortical"
+I612,STROKE,ICD10,"Intracerebral haemorrhage in hemisphere, unspecified"
+I613,STROKE,ICD10,Intracerebral haemorrhage in brain stem
+I614,STROKE,ICD10,Intracerebral haemorrhage in cerebellum
+I615,STROKE,ICD10,"Intracerebral haemorrhage, intraventricular"
+I616,STROKE,ICD10,"Intracerebral haemorrhage, multiple localised"
+I618,STROKE,ICD10,Other intracerebral haemorrhage
+I619,STROKE,ICD10,"Intracerebral haemorrhage, unspecified"
+I63,STROKE,ICD10,Cerebral infarction
+I630,STROKE,ICD10,Cerebral infarction due to thrombosis of precerebral arteries
+I631,STROKE,ICD10,Cerebral infarction due to embolism of precerebral arteries
+I632,STROKE,ICD10,Cerebral infarction due to unspecified occlusion or stenosis of precerebral arteries
+I633,STROKE,ICD10,Cerebral infarction due to thrombosis of cerebral arteries
+I634,STROKE,ICD10,Cerebral infarction due to embolism of cerebral arteries
+I635,STROKE,ICD10,Cerebral infarction due to unspecified occlusion or stenosis of cerebral arteries
+I638,STROKE,ICD10,Other cerebral infarction
+I639,STROKE,ICD10,"Cerebral infarction, unspecified"
+I64,STROKE,ICD10,"Stroke, not specified as haemorrhage or infarction"
+I70,CV,ICD10,Atherosclerosis
+I700,CV,ICD10,Atherosclerosis of aorta
+I7000,CV,ICD10,Atherosclerosis of aorta (without gangrene)
+I7001,CV,ICD10,Atherosclerosis of aorta (with gangrene)
+I702,CV,ICD10,Atherosclerosis of arteries of the extremities
+I7020,CV,ICD10,Atherosclerosis of arteries of extremities (without gangrene)
+I7021,CV,ICD10,Atherosclerosis of arteries of extremities (with gangrene)
+I708,CV,ICD10,Atherosclerosis of other arteries
+I7080,CV,ICD10,Atherosclerosis of other arteries (without gangrene)
+I71,CV,ICD10,Aortic aneurysm and dissection
+I710,CV,ICD10,Dissection of aorta [any part]
+I711,CV,ICD10,"Thoracic aortic aneurysm, ruptured"
+I712,CV,ICD10,"Thoracic aortic aneurysm, without mention of rupture"
+I713,CV,ICD10,"Abdominal aortic aneurysm, ruptured"
+I714,CV,ICD10,"Abdominal aortic aneurysm, without mention of rupture"
+I715,CV,ICD10,"Thoracoabdominal aortic aneurysm, ruptured"
+I716,CV,ICD10,"Thoracoabdominal aortic aneurysm, without mention of rupture"
+I718,CV,ICD10,"Aortic aneurysm of unspecified site, ruptured"
+I719,CV,ICD10,"Aortic aneurysm of unspecified site, without mention of rupture"
+I73,CV,ICD10,Other peripheral vascular diseases
+I730,CV,ICD10,Raynaud's syndrome
+I731,CV,ICD10,Thromboangiitis obliterans [Buerger]
+I738,CV,ICD10,Other specified peripheral vascular diseases
+I739,CV,ICD10,"Peripheral vascular disease, unspecified"
+I74,CV,ICD10,Arterial embolism and thrombosis
+I740,CV,ICD10,Embolism and thrombosis of abdominal aorta
+I741,CV,ICD10,Embolism and thrombosis of other and unspecified parts of aorta
+I742,CV,ICD10,Embolism and thrombosis of arteries of the upper extremities
+I743,CV,ICD10,Embolism and thrombosis of arteries of the lower extremities
+I744,CV,ICD10,"Embolism and thrombosis of arteries of extremities, unspecified"
+I745,CV,ICD10,Embolism and thrombosis of iliac artery
+I748,CV,ICD10,Embolism and thrombosis of other arteries
+I749,CV,ICD10,Embolism and thrombosis of unspecified artery
+Q20,CV,ICD10,Congenital malformations of cardiac chambers and connexions
+Q200,CV,ICD10,Common arterial trunk
+Q201,CV,ICD10,Double outlet right ventricle
+Q202,CV,ICD10,Double outlet left ventricle
+Q203,CV,ICD10,Discordant ventriculoarterial connexion
+Q204,CV,ICD10,Double inlet ventricle
+Q205,CV,ICD10,Discordant atrioventricular connexion
+Q206,CV,ICD10,Isomerism of atrial appendages
+Q208,CV,ICD10,Other congenital malformations of cardiac chambers and connexions
+Q209,CV,ICD10,"Congenital malformation of cardiac chambers and connexions, unspecified"
+Q21,CV,ICD10,Congenital malformations of cardiac septa
+Q210,CV,ICD10,Ventricular septal defect
+Q211,CV,ICD10,Atrial septal defect
+Q212,CV,ICD10,Atrioventricular septal defect
+Q213,CV,ICD10,Tetralogy of Fallot
+Q214,CV,ICD10,Aortopulmonary septal defect
+Q218,CV,ICD10,Other congenital malformations of cardiac septa
+Q219,CV,ICD10,"Congenital malformation of cardiac septum, unspecified"
+Q22,CV,ICD10,Congenital malformations of pulmonary and tricuspid valves
+Q221,CV,ICD10,Congenital pulmonary valve stenosis
+Q222,CV,ICD10,Congenital pulmonary valve insufficiency
+Q224,CV,ICD10,Congenital tricuspid stenosis
+Q225,CV,ICD10,Ebstein's anomaly
+Q228,CV,ICD10,Other congenital malformations of tricuspid valve
+Q229,CV,ICD10,"Congenital malformation of tricuspid valve, unspecified"
+Q23,CV,ICD10,Congenital malformations of aortic and mitral valves
+Q230,CV,ICD10,Congenital stenosis of aortic valve
+Q231,CV,ICD10,Congenital insufficiency of aortic valve
+Q232,CV,ICD10,Congenital mitral stenosis
+Q233,CV,ICD10,Congenital mitral insufficiency
+Q234,CV,ICD10,Hypoplastic left heart syndrome
+Q238,CV,ICD10,Other congenital malformations of aortic and mitral valves
+Q239,CV,ICD10,"Congenital malformation of aortic and mitral valves, unspecified"
+Q24,CV,ICD10,Other congenital malformations of heart
+Q240,CV,ICD10,Dextrocardia
+Q241,CV,ICD10,Levocardia
+Q243,CV,ICD10,Pulmonary infundibular stenosis
+Q244,CV,ICD10,Congenital subaortic stenosis
+Q245,CV,ICD10,Malformation of coronary vessels
+Q246,CV,ICD10,Congenital heart block
+Q248,CV,ICD10,Other specified congenital malformations of heart
+Q249,CV,ICD10,"Congenital malformation of the heart, unspecified"
+41001,MI,ICD9,"Acute myocardial infarction of anterolateral wall, initial episode of care"
+41011,MI,ICD9,"Acute myocardial infarction of other anterior wall, initial episode of care"
+41021,MI,ICD9,"Acute myocardial infarction of inferolateral wall, initial episode of care"
+41031,MI,ICD9,"Acute myocardial infarction of inferoposterior wall, initial episode of care"
+41041,MI,ICD9,"Acute myocardial infarction of other inferior wall, initial episode of care"
+41051,MI,ICD9,"Acute myocardial infarction of other lateral wall, initial episode of care"
+41061,MI,ICD9,"True posterior wall infarction, initial episode of care"
+41071,MI,ICD9,"Subendocardial infarction, initial episode of care"
+41081,MI,ICD9,"Acute myocardial infarction of other specified sites, initial episode of care"
+41091,MI,ICD9,"Acute myocardial infarction of unspecified site, initial episode of care"
+4111,CV,ICD9,Intermediate coronary syndrome
+41189,CV,ICD9,"Other acute and subacute forms of ischemic heart disease, other"
+414,CV,ICD9,Other forms of chronic ischaemic heart disease
+4141,CV,ICD9,Aneurysm of heart
+41419,CV,ICD9,Other aneurysm of heart
+4148,CV,ICD9,Other specified forms of chronic ischaemic heart disease
+4149,CV,ICD9,"Chronic ischaemic heart disease, unspecified"
+425,CV,ICD9,Cardiomyopathy
+42511,CV,ICD9,Hypertrophic obstructive cardiomyopathy
+42518,CV,ICD9,Other hypertrophic cardiomyopathy
+4252,CV,ICD9,Obscure cardiomyopathy of africa
+4253,CV,ICD9,Endocardial fibroelastosis
+4254,CV,ICD9,Other primary cardiomyopathies
+4255,CV,ICD9,Alcoholic cardiomyopathy
+4257,CV,ICD9,Nutritional and metabolic cardiomyopathies
+4258,CV,ICD9,Cardiomyopathy in other diseases classified elsewhere
+4259,CV,ICD9,"Secondary cardiomyopathy, unspecified"
+4271,CV,ICD9,Paroxysmal ventricular tachycardia
+4273,AF,ICD9,Atrial fibrillation and flutter
+42731,AF,ICD9,Atrial fibrillation
+42732,AF,ICD9,Atrial flutter
+4275,CV,ICD9,Cardiac arrest
+4279,CV,ICD9,"Cardiac dysrhythmias, unspecified"
+428,CV,ICD9,Heart failure
+4292,CV,ICD9,"Cardiovascular disease, unspecified"
+43401,STROKE,ICD9,Cerebral thrombosis with cerebral infarction
+43411,STROKE,ICD9,Cerebral embolism with cerebral infarction
+43491,STROKE,ICD9,"Cerebral artery occlusion, unspecified with cerebral infarction"
+436,STROKE,ICD9,Acute but ill-defined cerebrovascular disease
+1070,CV,SELF_OPERATION,coronary angioplasty (ptca) +/- stent
+1095,CV,SELF_OPERATION,coronary artery bypass grafts (cabg)
+1523,CV,SELF_OPERATION,triple heart bypass
+410,MI,ICD9,Acute myocardial infarction
+4274,VA,ICD9,Ventricular fibrillation and flutter
+42741,VA,ICD9,Ventricular fibrillation
+42742,VA,ICD9,Ventricular flutter
+430,STROKE,ICD9,Subarachnoid haemorrhage
+431,STROKE,ICD9,Intracerebral haemorrhage
+4340,STROKE,ICD9,Cerebral thrombosis
+4341,STROKE,ICD9,Cerebral embolism
+4349,STROKE,ICD9,"Occlusion of cerebral arteries, unspecified"
+435,TIA,ICD9,Transient cerebral ischaemia
+4359,TIA,ICD9,Transient cerebral ischaemia
+I636,STROKE,ICD10,"Cerebral infarction due to cerebral venous thrombosis, nonpyogenic"
