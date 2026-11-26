@@ -20,10 +20,11 @@ PROJECT = Path("/project/")
 ACTIHEART_RELEASE = PROJECT / "Internal_Data/I1334_29.08.2025"
 ACTIHEART = ACTIHEART_RELEASE / "Actiheart_Study_GPR_Processed_Files"
 ACTIHEART_SUMMARY = ACTIHEART_RELEASE / "DS00016_Actiheart/Actiheart_Data.xlsx"
-APC = PROJECT / "Full_Data/Admitted_Patient_Care_Data_(HES_APC).csv"
-OP = PROJECT / "Full_Data/Outpatient_Care_Data_(HES_OP).csv"
-MORTALITY = PROJECT / "Full_Data/Mortality_Data.csv"
-CODE_LIST = PROJECT / "Full_data/CodesFollowUp_030522.csv"
+FULL_DATA = PROJECT / "Full_Data"
+APC = FULL_DATA / "Admitted_Patient_Care_Data_(HES_APC).csv"
+OP = FULL_DATA / "Outpatient_Care_Data_(HES_OP).csv"
+MORTALITY = FULL_DATA / "Mortality_Data.csv"
+CODE_LIST = PROJECT / "TRE_TwinsUK/CodesFollowUp_241126.csv"
 OUTPUT = PROJECT / "DerivedData"
 LINKED_ROSTER = None  # Path to CSV containing only eligible linked participants.
 ROSTER_ID = "STUDY_ID"  # Same ID system as Study No / Person Id in this release.
@@ -39,9 +40,12 @@ SOURCE_END = {
 TIME_COLUMN = "Real_Time" 
 EPOCH_COLUMN = "timepoint"
 
-MACE = ("mi", "hf", "va", "implant")
+MACE = ("mi", "hf", "va", "implant", "tia")
 MACE_STROKE = (*MACE, "stroke")
-CATEGORY_LABELS = {"mi": "MI", "hf": "HF", "va": "VA", "implant": "implant", "af": "AF", "stroke": "stroke"}
+CATEGORY_LABELS = {
+    "mi": "MI", "hf": "HF", "va": "VA", "implant": "implant",
+    "tia": "TIA", "af": "AF", "stroke": "stroke",
+}
 COMPOSITES = {
     "MACE": MACE,
     "MACE_stroke": MACE_STROKE,
@@ -315,14 +319,14 @@ def main():
         datefmt="%Y-%m-%d %H:%M:%S",
     )
     log.info("Starting TwinsUK outcome extraction")
+    log.info("Reading outcome codes from %s", CODE_LIST)
+    lookup = code_lookup()
     if LINKED_ROSTER is None and ASSUME_ALL_ACTIHEART_LINKED:
         log.warning("Assuming all raw Actiheart participants are eligible for HES and mortality linkage.")
     cohort = actiheart_baselines()
     linked_count = int(cohort["linked"].sum()) if cohort["linked"].notna().any() else "unknown"
     log.info("Actiheart cohort: %d participants, %s eligible for linkage, %d missing baseline",
              len(cohort), linked_count, cohort["baseline_date"].isna().sum())
-    log.info("Reading outcome codes from %s", CODE_LIST)
-    lookup = code_lookup()
     event_parts, deaths = [], []
     for path, source in ((APC, "APC"), (OP, "OP"), (MORTALITY, "Mortality")):
         tables, death_records = extract(path, source, cohort, lookup)
